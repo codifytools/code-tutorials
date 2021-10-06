@@ -1,9 +1,8 @@
 import { useMemo } from "react";
 import { getMDXComponent } from "mdx-bundler/client";
-
 import { getAllPosts, getPostBySlug } from '../../lib/posts';
 import Layout from '../../components/layout';
-import {mdxToHtml } from '../../lib/markdown';
+import { mdxToHtml } from '../../lib/mdx';
 
 export default function Post({ meta, code }) {
   const Component = useMemo(() => getMDXComponent(code), [code]);
