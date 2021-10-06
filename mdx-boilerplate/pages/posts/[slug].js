@@ -4,8 +4,8 @@ import { getAllPosts, getPostBySlug } from '../../lib/posts';
 import Layout from '../../components/layout';
 import { mdxToHtml } from '../../lib/mdx';
 
-export default function Post({ meta, code }) {
-  const Component = useMemo(() => getMDXComponent(code), [code]);
+export default function Post({ meta, content }) {
+  const Component = useMemo(() => getMDXComponent(content), [content]);
 
   return (
     <Layout meta={meta}>
@@ -21,7 +21,7 @@ export async function getStaticProps({ params }) {
   return {
     props: {
       ...post,
-      code: content.code
+      content
     }
   }
 }

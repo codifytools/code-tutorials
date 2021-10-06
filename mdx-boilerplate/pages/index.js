@@ -25,7 +25,7 @@ export default function Home({ posts }) {
 
           <div className={styles.grid}>
             {posts.map(post => (
-              <a href={`/post/${post.slug}`} key={post.slug} className={styles.card}>
+              <a href={`/posts/${post.slug}`} key={post.slug} className={styles.card}>
                 <h2>{post.meta.title} &rarr;</h2>
                 <p>{post.meta.description}</p>
               </a>
