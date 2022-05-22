@@ -1,42 +1,48 @@
 import { useMemo } from "react";
+import fs from "fs";
+import path from "path";
+import { bundleMDX } from "mdx-bundler";
 import { getMDXComponent } from "mdx-bundler/client";
-import { getAllPosts, getPostBySlug } from '../../lib/posts';
-import Layout from '../../components/layout';
-import { mdxToHtml } from '../../lib/mdx';
+import remarkPrism from "remark-prism";
+import matter from "gray-matter";
+import Layout from "../../components/layout";
 
-export default function Post({ meta, content }) {
-  const Component = useMemo(() => getMDXComponent(content), [content]);
+export async function getStaticPaths() {
+  const filePaths = path.join(process.cwd(), "posts");
+  const files = fs.readdirSync(filePaths);
 
-  return (
-    <Layout meta={meta}>
-      <Component />
-    </Layout>
-  );
+  const paths = files.map((fileName) => {
+    const slug = fileName.replace(".mdx", "");
+    return { params: { slug } };
+  });
+
+  return { paths, fallback: false };
 }
 
 export async function getStaticProps({ params }) {
-  const post = await getPostBySlug(params.slug);
-  const content = await mdxToHtml(post.content);
+  const filePath = path.join(process.cwd(), "posts", `${params.slug}.mdx`);
+  const post = fs.readFileSync(filePath);
 
-  return {
-    props: {
-      ...post,
-      content
-    }
-  }
-}
+  const { data: frontmatter, content } = matter(post);
 
-export async function getStaticPaths() {
-  const posts = getAllPosts();
+  const { code } = await bundleMDX({
+    source: content,
+    xdmOptions: (options) => {
+      options.remarkPlugins = [...(options.remarkPlugins ?? []), remarkPrism]
+      return options;
+    },
+  });
 
-  return {
-    paths: posts.map((post) => {
-      return {
-        params: {
-          slug: post.slug
-        }
-      };
-    }),
-    fallback: false
-  }
+  return { props: { frontmatter, code } };
+};
+
+export default function Post({ frontmatter, code }) {
+  console.log(frontmatter);
+  const Component = useMemo(() => getMDXComponent(code), [code]);
+
+  return (
+    <Layout meta={frontmatter}>
+      <Component />
+    </Layout>
+  );
 }
