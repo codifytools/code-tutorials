@@ -1,8 +1,24 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import { getAllPosts } from '../lib/posts';
-import Layout from '../components/layout';
-import styles from '../styles/Home.module.css'
+import fs from "fs";
+import path from "path";
+import matter from "gray-matter";
+import Image from "next/image";
+import Layout from "../components/layout";
+import styles from "../styles/Home.module.css";
+
+export async function getStaticProps() {
+  const filePaths = path.join(process.cwd(), "posts");
+  const files = fs.readdirSync(filePaths);
+
+  const posts = files.map((fileName) => {
+    const slug = fileName.replace(".md", "");
+    const fileContent = fs.readFileSync(path.join(process.cwd(), "posts", fileName));
+
+    const { data: frontmatter } = matter(fileContent);
+    return { slug, ...frontmatter };
+  });
+
+  return { props: { posts } };
+};
 
 export default function Home({ posts }) {
   const meta = {
@@ -26,8 +42,8 @@ export default function Home({ posts }) {
           <div className={styles.grid}>
             {posts.map(post => (
               <a href={`/post/${post.slug}`} key={post.slug} className={styles.card}>
-                <h2>{post.meta.title} &rarr;</h2>
-                <p>{post.meta.description}</p>
+                <h2>{post.title} &rarr;</h2>
+                <p>{post.description}</p>
               </a>
             ))}
           </div>
@@ -48,12 +64,4 @@ export default function Home({ posts }) {
       </div>
     </Layout>
   )
-}
-
-export async function getStaticProps() {
-  const posts = getAllPosts();
-
-  return {
-    props: { posts }
-  }
 }

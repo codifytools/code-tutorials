@@ -1,38 +1,38 @@
-import { getAllPosts, getPostBySlug } from '../../lib/posts';
-import Layout from '../../components/layout';
-import markdownToHtml from '../../lib/markdown';
+import fs from "fs";
+import path from "path";
+import matter from "gray-matter";
+import { remark } from "remark";
+import html from "remark-html";
+import Layout from "../../components/layout";
 
-export default function Post({ meta, content }) {
-  return (
-    <Layout meta={meta}>
-      <div dangerouslySetInnerHTML={{ __html: content }} />
-    </Layout>
-  );
+export async function getStaticPaths() {
+  const filePaths = path.join(process.cwd(), "posts");
+  const files = fs.readdirSync(filePaths);
+
+  const paths = files.map((fileName) => {
+    const slug = fileName.replace(".md", "");
+    return { params: { slug } };
+  });
+
+  return { paths, fallback: false };
 }
 
 export async function getStaticProps({ params }) {
-  const post = await getPostBySlug(params.slug);
-  const content = await markdownToHtml(post.content);
+  const filePath = path.join(process.cwd(), "posts", `${params.slug}.md`);
+  const post = fs.readFileSync(filePath);
 
-  return {
-    props: {
-      ...post,
-      content
-    }
-  }
-}
+  const { data: frontmatter, content: rawContent } = matter(post);
 
-export async function getStaticPaths() {
-  const posts = getAllPosts();
+  const code = await remark().use(html).process(rawContent);
+  const content = code.toString();
 
-  return {
-    paths: posts.map((post) => {
-      return {
-        params: {
-          slug: post.slug
-        }
-      };
-    }),
-    fallback: false
-  }
+  return { props: { frontmatter, content } };
+};
+
+export default function Post({ frontmatter, content }) {
+  return (
+    <Layout meta={frontmatter}>
+      <div dangerouslySetInnerHTML={{ __html: content }} />
+    </Layout>
+  );
 }
