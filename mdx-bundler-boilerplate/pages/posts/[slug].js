@@ -37,7 +37,6 @@ export async function getStaticProps({ params }) {
 };
 
 export default function Post({ frontmatter, code }) {
-  console.log(frontmatter);
   const Component = useMemo(() => getMDXComponent(code), [code]);
 
   return (
