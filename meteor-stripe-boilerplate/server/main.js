@@ -5,7 +5,7 @@ const stripe = require('stripe')(Meteor.settings.stripe_secret_key);
 Meteor.methods({
   'payment.intent' () {
     const paymentIntent = Promise.await(stripe.paymentIntents.create({
-      amount: 5000, // 5000 cents = 50 dollars
+      amount: 5000, // amount in cents
       currency: 'usd'
     }));
 
