@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from 'react';
+import React, { useEffect, Fragment } from 'react';
 import { Hello } from './Hello.jsx';
 import { Info } from './Info.jsx';
 import SEO from './components/SEO.jsx';
